@@ -1,0 +1,262 @@
+import { Component, Input } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { TranslatePipe } from '../../pipes/translate.pipe';
+import { LocalStorageService } from '../../services/local-storage.service';
+import { CategoriesService, Category } from '../../services/categories.service';
+import { TransactionsService, Transaction } from '../../services/transactions.service';
+import { LOCAL_STORAGE_KEY, TRANSACTIONS_KEY } from '../../constants/keys';
+import { ConfigService } from '../../services/config.service';
+import { ModalService } from '../../services/modal.service';
+import { EditRecordComponent } from '../modal/edit-record/edit-record.component';
+import { ModalComponent } from '../modal/modal.component';
+
+@Component({
+  selector: 'app-table',
+  standalone: true,
+  imports: [CommonModule, TranslatePipe, EditRecordComponent, ModalComponent],
+  providers: [DatePipe],
+  templateUrl: './table.component.html',
+  styleUrls: ['./table.component.scss']
+})
+export class TableComponent {
+  @Input() data!: any;
+  rows: any[] = [];
+  titles: string[] = [];
+  showedTitles: { [key: string]: boolean } = {};
+  toggleableColumns: string[] = ['category', 'description'];
+  currencyOptions: any;
+
+  selectedTransaction: Transaction | null = null;
+  isFirstTransaction: boolean = false;
+  firstTransactionId: number | null = null;
+
+  constructor(
+    protected datePipe: DatePipe,
+    private readonly localStorageService: LocalStorageService,
+    private readonly categoriesService: CategoriesService,
+    private readonly transactionsService: TransactionsService,
+    private readonly configService: ConfigService,
+    private readonly modalService: ModalService
+  ) {
+    this.configService.config$.subscribe(() => {
+      this.currencyOptions = this.configService.getCurrencyPipeOptions();
+    });
+  }
+
+  ngOnInit() {
+    // Obtenemos las categorías primero
+    this.categoriesService.getCategories()
+      .then(() => {
+        const categoriesFromStorage = this.localStorageService.getItem<Category[]>('categories');
+        console.log('Categorías obtenidas desde localStorage:', categoriesFromStorage);
+      })
+      .catch();
+
+    // Recargar transacciones para asegurar que tengan el color de categoría
+    this.loadTransactions();
+  }
+
+  loadTransactions() {
+    this.transactionsService.getTransactions()
+      .then(() => {
+        const transactionsFromStorage = this.localStorageService.getItem<Transaction[]>(TRANSACTIONS_KEY);
+
+        if (transactionsFromStorage && transactionsFromStorage.length > 0) {
+          this.rows = transactionsFromStorage;
+          this.titles = Object.keys(this.rows[0] || {});
+
+          // Determinar el ID de la primera transacción
+          const sortedTransactions = [...transactionsFromStorage].sort((a, b) => {
+            const dateA = new Date(a.date).getTime();
+            const dateB = new Date(b.date).getTime();
+            if (dateA !== dateB) {
+              return dateA - dateB;
+            }
+            return a.id - b.id;
+          });
+          
+          this.firstTransactionId = sortedTransactions.length > 0 ? sortedTransactions[0].id : null;
+
+          // Verificar si las transacciones tienen el color de categoría
+          const firstTransaction = this.rows[0];
+          const hasCategoryColor = firstTransaction && (
+            (firstTransaction['Category'] && firstTransaction['Category'].color) ||
+            (firstTransaction['category'] && firstTransaction['category'].color)
+          );
+
+          if (!hasCategoryColor) {
+            console.log('⚠️ Las transacciones no tienen color de categoría. Recargando desde el servidor...');
+            // Limpiar localStorage para forzar recarga
+            this.localStorageService.removeItem(TRANSACTIONS_KEY);
+            // Recargar
+            this.transactionsService.getTransactions()
+              .then(() => {
+                const newTransactions = this.localStorageService.getItem<Transaction[]>(TRANSACTIONS_KEY);
+                if (newTransactions) {
+                  this.rows = newTransactions;
+                }
+              });
+          }
+
+          const savedShowedTitles = this.localStorageService.getItem<{ [key: string]: boolean }>(LOCAL_STORAGE_KEY);
+
+          if (savedShowedTitles) this.showedTitles = savedShowedTitles;
+          else {
+            this.titles.forEach(title => this.showedTitles[title] = true);
+            this.toggleableColumns.forEach(column => {
+              this.showedTitles[column] = false;
+            });
+          }
+
+          this.localStorageService.setItem(LOCAL_STORAGE_KEY, this.showedTitles);
+        }
+      })
+      .catch(error => console.error('Error al obtener y guardar las transacciones:', error));
+  }
+
+  toggleTitle(title: string) {
+    this.showedTitles[title] = !this.showedTitles[title];
+    this.localStorageService.setItem(LOCAL_STORAGE_KEY, this.showedTitles);
+  }
+
+  formatTitle(title: string): string {
+    return title.charAt(0).toUpperCase() + title.slice(1);
+  }
+
+  /**
+   * Obtiene el color de la categoría desde el objeto de transacción o desde las categorías almacenadas
+   */
+  getCategoryColor(item: any): string | null {
+    // Primero intentar obtener el color directamente de la categoría en la transacción
+    let categoryObj = null;
+    
+    if (item['Category']) {
+      categoryObj = item['Category'];
+    } else if (item['category']) {
+      categoryObj = item['category'];
+    }
+    
+    if (categoryObj) {
+      // Intentar diferentes formas de acceder al color
+      if (categoryObj.color) {
+        return categoryObj.color;
+      } else if (categoryObj.dataValues && categoryObj.dataValues.color) {
+        return categoryObj.dataValues.color;
+      }
+    }
+    
+    // Si no encontramos el color en la transacción, buscarlo en las categorías almacenadas
+    if (item['category_id']) {
+      const categories = this.localStorageService.getItem<Category[]>('categories');
+      if (categories && Array.isArray(categories)) {
+        const category = categories.find(cat => cat.id === item['category_id']);
+        if (category && category.color) {
+          return category.color;
+        }
+      }
+    }
+    
+    return null;
+  }
+
+  /**
+   * Calcula el contraste de luminancia entre un color y el fondo
+   * Retorna true si debe usar texto blanco, false si debe usar texto negro
+   */
+  getContrastColor(hexColor: string): string {
+    // Remover el # si existe
+    const hex = hexColor.replace('#', '');
+    
+    // Convertir a RGB
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    
+    // Calcular luminancia relativa (fórmula WCAG)
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    
+    // Si la luminancia es menor a 0.5, usar texto blanco, sino negro
+    return luminance < 0.5 ? '#ffffff' : '#000000';
+  }
+
+  /**
+   * Obtiene el color de fondo de la categoría
+   */
+  getCategoryBackgroundColor(item: any): string {
+    const color = this.getCategoryColor(item);
+    return color || 'transparent';
+  }
+
+  /**
+   * Obtiene el color de texto de la categoría basado en el contraste
+   */
+  getCategoryTextColor(item: any): string {
+    const color = this.getCategoryColor(item);
+    if (!color) {
+      return '';
+    }
+    return this.getContrastColor(color);
+  }
+
+  async openEditModal(transaction: any): Promise<void> {
+    // Convertir el objeto de transacción al formato esperado
+    const transactionData: Transaction = {
+      id: transaction.id,
+      date: transaction.date,
+      name: transaction.name,
+      amount: transaction.amount,
+      category_id: transaction.category_id || (transaction.Category ? transaction.Category.id : transaction.category?.id),
+      description: transaction.description || '',
+      balance_after: transaction.balance_after || undefined,
+      user_id: transaction.user_id
+    };
+
+    this.selectedTransaction = transactionData;
+    
+    // Determinar si es la primera transacción
+    const allTransactions = await this.transactionsService.getTransactions();
+    const sortedTransactions = [...allTransactions].sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      if (dateA !== dateB) {
+        return dateA - dateB;
+      }
+      return a.id - b.id;
+    });
+    
+    this.isFirstTransaction = sortedTransactions.length > 0 && sortedTransactions[0].id === transaction.id;
+    
+    // Abrir el modal después de establecer la transacción
+    setTimeout(() => {
+      this.modalService.open({
+        title: 'Editar transacción',
+        isDanger: false,
+      });
+    }, 0);
+  }
+
+  openDeleteModal(transaction: any): void {
+    if (this.isFirstTransactionRecord(transaction)) {
+      alert('No se puede eliminar el primer registro');
+      return;
+    }
+
+    this.modalService.open({
+      title: 'Eliminar transacción',
+      content: '¿Está seguro que quiere eliminar este registro?',
+      isDanger: true,
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar',
+      onConfirm: async () => {
+        await this.transactionsService.deleteTransaction(transaction.id);
+        // Recargar transacciones
+        await this.loadTransactions();
+        window.location.reload();
+      }
+    });
+  }
+
+  isFirstTransactionRecord(transaction: any): boolean {
+    return this.firstTransactionId !== null && transaction.id === this.firstTransactionId;
+  }
+}

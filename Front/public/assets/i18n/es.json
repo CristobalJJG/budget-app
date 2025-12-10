@@ -1,0 +1,107 @@
+{
+    "app": {
+        "title": "Aplicación de Presupuesto",
+        "welcome": "Bienvenido",
+        "noItems": "No hay elementos.",
+        "na": "N/A"
+    },
+    "modal": {
+        "confirm": "Confirmar",
+        "cancel": "Cancelar",
+        "areYouSure": "¿Estás seguro?",
+        "deleteWarning": "Esta acción no se puede deshacer.",
+        "deactivate": "Desactivar"
+    },
+    "navbar": {
+        "home": "Inicio",
+        "month": "Mes",
+        "general": "General"
+    },
+    "nav": {
+        "home": "Inicio",
+        "month": "Mes",
+        "general": "General",
+        "settings": "Configuración"
+    },
+    "month": {
+        "addRecord": "Añadir registro"
+    },
+    "logger": {
+        "namePlaceholder": "Nombre...",
+        "surnamePlaceholder": "Apellido...",
+        "emailPlaceholder": "E-mail...",
+        "passwordPlaceholder": "Contraseña...",
+        "enter": "Entrar",
+        "noAccount": "¿No tienes cuenta?",
+        "haveAccount": "¿Ya tienes cuenta?",
+        "register": "Registrate",
+        "login": "Iniciar sesión",
+        "provisionalEntry": "Entrada provisional"
+    },
+    "config": {
+        "title": "Configuración General",
+        "currencySettings": "Configuración de Moneda",
+        "currency": "Moneda",
+        "format": "Formato de Moneda",
+        "region": "Región",
+        "theme": "Tema",
+        "themeLight": "Claro",
+        "themeDark": "Oscuro",
+        "save": "Guardar Configuración",
+        "preview": "Vista Previa",
+        "previewText": "Formato de moneda:",
+        "importExcel": "Importar Transacciones desde Excel",
+        "selectFile": "Seleccionar archivo Excel",
+        "fileFormat": "Formatos soportados: .xlsx, .xls. Columnas requeridas: Fecha, Nombre, Monto, Categoría",
+        "selectedFile": "Archivo seleccionado",
+        "import": "Importar",
+        "importing": "Importando",
+        "importSuccess": "Importación exitosa",
+        "importError": "Error en la importación",
+        "successCount": "Transacciones correctas",
+        "failedCount": "Transacciones fallidas",
+        "errors": "Errores",
+        "row": "Fila",
+        "andMore": "y",
+        "moreErrors": "errores más"
+    },
+    "categories": {
+        "name": "Nombre",
+        "color": "Color",
+        "create": "Crear categoría",
+        "edit": "Editar",
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "delete": "Eliminar"
+    },
+    "table": {
+        "showHideColumns": "Mostrar / Ocultar Columnas",
+        "noItemsToShow": "No hay elementos para mostrar",
+        "columns": {
+            "date": "Fecha",
+            "name": "Nombre",
+            "amount": "Importe",
+            "balance_after": "Saldo",
+            "description": "Descripción",
+            "category": "Categoría",
+            "quantity": "Cantidad",
+            "limit": "Límite",
+            "actions": "Acciones"
+        }
+    },
+    "buttons": {
+        "openModal": "Abrir diálogo",
+        "continue": "Continuar",
+        "cancel": "Cancelar",
+        "confirm": "Confirmar",
+        "logout": "Cerrar sesión"
+    },
+    "labels": {
+        "show": "Mostrar",
+        "hide": "Ocultar"
+    },
+    "messages": {
+        "loading": "Cargando...",
+        "errorLoading": "Error al cargar el contenido"
+    }
+}

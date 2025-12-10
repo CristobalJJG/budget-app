@@ -1,0 +1,60 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+    <!-- Fecha -->
+    <div>
+        <label class="block text-sm font-medium text-white mb-1">{{ 'table.columns.date' | translate }}</label>
+        <input type="date" formControlName="date" class="input input-bordered w-full" />
+        <span class="text-red-400 text-xs" *ngIf="form.get('date')?.hasError('required') && form.get('date')?.touched">
+            Required
+        </span>
+    </div>
+
+    <!-- Nombre -->
+    <div>
+        <label class="block text-sm font-medium text-white mb-1">{{ 'table.columns.name' | translate }}</label>
+        <input type="text" formControlName="name" placeholder="Nombre del gasto" class="input input-bordered w-full" />
+        <span class="text-red-400 text-xs" *ngIf="form.get('name')?.hasError('required') && form.get('name')?.touched">
+            Required
+        </span>
+    </div>
+
+    <!-- Importe -->
+    <div>
+        <label class="block text-sm font-medium text-white mb-1">{{ 'table.columns.amount' | translate }}</label>
+        <input type="number" formControlName="amount" placeholder="0.00" step="0.01"
+            class="input input-bordered w-full" />
+        <span class="text-red-400 text-xs"
+            *ngIf="form.get('amount')?.hasError('required') && form.get('amount')?.touched">
+            Required
+        </span>
+    </div>
+
+    <!-- Categoría -->
+    <div>
+        <label class="block text-sm font-medium text-white mb-1">{{ 'table.columns.category' | translate }}</label>
+        <select formControlName="category_id" class="select select-bordered w-full">
+            <option value="" disabled>Selecciona una categoría</option>
+            <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+        </select>
+        <span class="text-red-400 text-xs"
+            *ngIf="form.get('category_id')?.hasError('required') && form.get('category_id')?.touched">
+            Required
+        </span>
+    </div>
+
+    <!-- Descripción -->
+    <div>
+        <label class="block text-sm font-medium text-white mb-1">Descripción</label>
+        <textarea formControlName="description" placeholder="Nota opcional"
+            class="textarea textarea-bordered w-full"></textarea>
+    </div>
+
+    <!-- Botones -->
+    <div class="flex gap-2 justify-end pt-4">
+        <button type="button" (click)="onReset()" class="btn btn-outline">
+            {{ 'buttons.cancel' | translate }}
+        </button>
+        <button type="submit" [disabled]="!isFormValid" class="btn btn-primary">
+            {{ 'buttons.confirm' | translate }}
+        </button>
+    </div>
+</form>

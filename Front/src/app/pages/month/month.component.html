@@ -1,0 +1,12 @@
+<div class="flex justify-end mb-4">
+    <button (click)="openModal()"
+        class="rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white inset-ring inset-ring-white/5 hover:bg-white/20">
+        {{ 'month.addRecord' | translate }}
+    </button>
+</div>
+
+<app-modal>
+    <app-add-record></app-add-record>
+</app-modal>
+
+<app-table [data]="data"></app-table>

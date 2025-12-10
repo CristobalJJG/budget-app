@@ -1,0 +1,6 @@
+# Front
+/Front/.angular
+/Front/node_modules
+
+# Back
+/Back/node_modules

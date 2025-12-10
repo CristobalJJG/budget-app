@@ -1,0 +1,106 @@
+{
+    "app": {
+        "title": "Budget App",
+        "welcome": "Welcome",
+        "noItems": "There are no items.",
+        "na": "N/A"
+    },
+    "modal": {
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "areYouSure": "Are you sure?",
+        "deleteWarning": "This action cannot be undone.",
+        "deactivate": "Deactivate"
+    },
+    "navbar": {
+        "home": "Home",
+        "month": "Month",
+        "general": "General"
+    },
+    "nav": {
+        "home": "Home",
+        "month": "Month",
+        "general": "General",
+        "settings": "Settings"
+    },
+    "month": {
+        "addRecord": "Add record"
+    },
+    "logger": {
+        "namePlaceholder": "First name...",
+        "surnamePlaceholder": "Last name...",
+        "emailPlaceholder": "E-mail...",
+        "passwordPlaceholder": "Password...",
+        "enter": "Enter",
+        "noAccount": "Don't have an account?",
+        "haveAccount": "Already have an account?",
+        "register": "Register",
+        "login": "Log in",
+        "provisionalEntry": "Temporary entry"
+    },
+    "config": {
+        "title": "General Settings",
+        "currencySettings": "Currency Settings",
+        "currency": "Currency",
+        "format": "Currency Format",
+        "region": "Region",
+        "theme": "Theme",
+        "themeLight": "Light",
+        "themeDark": "Dark",
+        "save": "Save Settings",
+        "preview": "Preview",
+        "previewText": "Currency format:",
+        "importExcel": "Import Transactions from Excel",
+        "selectFile": "Select Excel file",
+        "fileFormat": "Supported formats: .xlsx, .xls. Required columns: Date, Name, Amount, Category",
+        "selectedFile": "Selected file",
+        "import": "Import",
+        "importing": "Importing",
+        "importSuccess": "Import successful",
+        "importError": "Import error",
+        "successCount": "Successful transactions",
+        "failedCount": "Failed transactions",
+        "errors": "Errors",
+        "row": "Row",
+        "andMore": "and",
+        "moreErrors": "more errors"
+    },
+    "categories": {
+        "name": "Name",
+        "color": "Color",
+        "create": "Create category",
+        "edit": "Edit",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete"
+    },
+    "table": {
+        "showHideColumns": "Show / Hide Columns",
+        "noItemsToShow": "No items to display",
+        "columns": {
+            "date": "Date",
+            "name": "Name",
+            "amount": "Amount",
+            "balance_after": "Balance After",
+            "category": "Category",
+            "quantity": "Quantity",
+            "limit": "Limit",
+            "actions": "Actions"
+        }
+    },
+    "buttons": {
+        "openModal": "Open dialog",
+        "continue": "Continue",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "logout": "Logout"
+    },
+    "labels": {
+        "show": "Show",
+        "hide": "Hide"
+    },
+    "messages": {
+        "loading": "Loading...",
+        "errorLoading": "Error loading content"
+    }
+}

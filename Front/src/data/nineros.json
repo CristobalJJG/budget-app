@@ -1,0 +1,46 @@
+{
+    "nineros": {
+        "junio": [
+            {
+                "date": "2025-05-31",
+                "name": "",
+                "quantity": "",
+                "category": "",
+                "limit": "",
+                "description": ""
+            },
+            {
+                "date": "2025-06-01",
+                "name": "",
+                "quantity": "",
+                "category": "",
+                "limit": "",
+                "description": ""
+            },
+            {
+                "date": "2025-06-02",
+                "name": "Sueldo",
+                "quantity": 1408.66,
+                "category": "Sueldo",
+                "limit": "",
+                "description": ""
+            },
+            {
+                "date": "2025-06-02",
+                "name": "Compra Mercadona",
+                "quantity": -20,
+                "category": "Comida",
+                "limit": "Comida",
+                "description": ""
+            },
+            {
+                "date": "2025-06-02",
+                "name": "Compra Queque",
+                "quantity": -14,
+                "category": "Ser Sociable",
+                "limit": "Socializar",
+                "description": ""
+            }
+        ]
+    }
+}
