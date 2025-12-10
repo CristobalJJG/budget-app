@@ -163,20 +163,39 @@ export class TableComponent {
    * Calcula el contraste de luminancia entre un color y el fondo
    * Retorna true si debe usar texto blanco, false si debe usar texto negro
    */
-  getContrastColor(hexColor: string): string {
-    // Remover el # si existe
+  getContrastColor(color: string): string {
+    if (!color) return '#000000';
+
+    const mapped = this.mapThemeContentColor(color);
+    if (mapped) return mapped;
+
+    if (color.startsWith('#') && (color.length === 7 || color.length === 4)) {
+      return this.getHexContrast(color);
+    }
+
+    return '#000000';
+  }
+
+  private getHexContrast(hexColor: string): string {
     const hex = hexColor.replace('#', '');
-    
-    // Convertir a RGB
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);
     const b = parseInt(hex.substring(4, 6), 16);
-    
-    // Calcular luminancia relativa (fórmula WCAG)
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    
-    // Si la luminancia es menor a 0.5, usar texto blanco, sino negro
     return luminance < 0.5 ? '#ffffff' : '#000000';
+  }
+
+  private mapThemeContentColor(color: string): string | null {
+    const normalized = color.toLowerCase();
+    if (normalized.includes('var(--p')) return 'oklch(var(--pc))';
+    if (normalized.includes('var(--s')) return 'oklch(var(--sc))';
+    if (normalized.includes('var(--a')) return 'oklch(var(--ac))';
+    if (normalized.includes('var(--in')) return 'oklch(var(--inc))';
+    if (normalized.includes('var(--su')) return 'oklch(var(--suc))';
+    if (normalized.includes('var(--wa')) return 'oklch(var(--wac))';
+    if (normalized.includes('var(--er')) return 'oklch(var(--erc))';
+    if (normalized.includes('var(--n')) return 'oklch(var(--nc))';
+    return null;
   }
 
   /**

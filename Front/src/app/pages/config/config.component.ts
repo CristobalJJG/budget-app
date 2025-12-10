@@ -8,11 +8,12 @@ import { CategoriesService, Category } from '../../services/categories.service';
 import { TransactionsService } from '../../services/transactions.service';
 import { AuthService } from '../../services/auth.service';
 import { ThemeSelectorComponent } from '../../components/theme-selector/theme-selector.component';
+import { ColorPickerComponent } from '../../components/color-picker/color-picker.component';
 
 @Component({
   selector: 'app-config',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslatePipe, ThemeSelectorComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslatePipe, ThemeSelectorComponent, ColorPickerComponent],
   templateUrl: './config.component.html',
   styles: []
 })
@@ -25,6 +26,27 @@ export class ConfigComponent {
   editCategoryForm!: FormGroup;
 
   theme: string = 'light';
+  themeColorOptions = [
+    { key: 'primary', value: 'oklch(var(--p))', content: 'oklch(var(--pc))' },
+    { key: 'secondary', value: 'oklch(var(--s))', content: 'oklch(var(--sc))' },
+    { key: 'accent', value: 'oklch(var(--a))', content: 'oklch(var(--ac))' },
+    { key: 'info', value: 'oklch(var(--in))', content: 'oklch(var(--inc))' },
+    { key: 'success', value: 'oklch(var(--su))', content: 'oklch(var(--suc))' },
+    { key: 'warning', value: 'oklch(var(--wa))', content: 'oklch(var(--wac))' },
+    { key: 'error', value: 'oklch(var(--er))', content: 'oklch(var(--erc))' },
+    { key: 'neutral', value: 'oklch(var(--n))', content: 'oklch(var(--nc))' },
+  ];
+
+  // Colores DaisyUI principales (etiquetas en español -> clave)
+  allowedColors = [
+    { label: 'Primario', key: 'primary' },
+    { label: 'Secundario', key: 'secondary' },
+    { label: 'Acento', key: 'accent' },
+    { label: 'Informacion', key: 'info' },
+    { label: 'Exito', key: 'success' },
+    { label: 'Advertencia', key: 'warning' },
+    { label: 'Error', key: 'error' },
+  ];
 
   // Import Excel
   selectedFile: File | null = null;
@@ -45,11 +67,11 @@ export class ConfigComponent {
     this.loadCategories();
     this.categoryForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
-      color: ['#cccccc', [Validators.required, Validators.pattern(/^#([0-9A-Fa-f]{6})$/)]]
+      color: [this.allowedColors[0].label, [Validators.required]]
     });
     this.editCategoryForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
-      color: ['#cccccc', [Validators.required, Validators.pattern(/^#([0-9A-Fa-f]{6})$/)]]
+      color: [this.allowedColors[0].label, [Validators.required]]
     });
 
     const user = this.authService.getCurrentUser();
@@ -65,7 +87,7 @@ export class ConfigComponent {
     const value = this.categoryForm.value;
     const created = await this.categoriesService.createCategory({ name: value.name, color: value.color });
     if (created) {
-      this.categoryForm.reset({ name: '', color: '#cccccc' });
+      this.categoryForm.reset({ name: '', color: this.allowedColors[0].label });
       await this.loadCategories();
     }
   }
@@ -79,7 +101,7 @@ export class ConfigComponent {
     this.editingCategoryId = category.id;
     this.editCategoryForm.patchValue({
       name: category.name,
-      color: category.color || '#cccccc'
+      color: category.color || this.allowedColors[0].label
     });
   }
 
@@ -104,6 +126,30 @@ export class ConfigComponent {
     }
   }
 
+  getBgClass(label: string): string {
+    const map: Record<string, string> = {
+      'Primario': 'bg-primary text-primary-content',
+      'Secundario': 'bg-secondary text-secondary-content',
+      'Acento': 'bg-accent text-accent-content',
+      'Informacion': 'bg-info text-info-content',
+      'Exito': 'bg-success text-success-content',
+      'Advertencia': 'bg-warning text-warning-content',
+      'Error': 'bg-error text-error-content',
+    };
+    return map[label] || 'bg-base-200 text-base-content';
+  }
+
+  isHex(value: string | undefined | null): boolean {
+    if (!value) return false;
+    return /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(value);
+  }
+
+  // Helper seguro para la plantilla: devuelve color de contraste o null
+  getContrastColorMaybe(color?: string | null): string | null {
+    if (!color) return null;
+    return this.isHex(color) ? this.getContrastColor(color) : null;
+  }
+
   async updateTheme(theme?: string): Promise<void> {
     const nextTheme = theme || this.theme || 'light';
     this.theme = nextTheme;
@@ -116,25 +162,43 @@ export class ConfigComponent {
   }
 
   /**
-   * Calcula el contraste de luminancia entre un color y el fondo
-   * Retorna el color de texto (blanco o negro) según el contraste
+   * Devuelve el color de texto asociado al token del tema.
+   * Si el color es un hex, calcula el contraste.
    */
-  getContrastColor(hexColor: string): string {
-    if (!hexColor) return '#000000';
+  getContrastColor(color: string): string {
+    if (!color) return '#000000';
 
-    // Remover el # si existe
+    const mapped = this.mapThemeContentColor(color);
+    if (mapped) return mapped;
+
+    if (color.startsWith('#') && (color.length === 7 || color.length === 4)) {
+      return this.getHexContrast(color);
+    }
+
+    // Fallback: texto negro
+    return '#000000';
+  }
+
+  private getHexContrast(hexColor: string): string {
     const hex = hexColor.replace('#', '');
-
-    // Convertir a RGB
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);
     const b = parseInt(hex.substring(4, 6), 16);
-
-    // Calcular luminancia relativa (fórmula WCAG)
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-
-    // Si la luminancia es menor a 0.5, usar texto blanco, sino negro
     return luminance < 0.5 ? '#ffffff' : '#000000';
+  }
+
+  private mapThemeContentColor(color: string): string | null {
+    const normalized = color.toLowerCase();
+    if (normalized.includes('var(--p')) return 'oklch(var(--pc))';
+    if (normalized.includes('var(--s')) return 'oklch(var(--sc))';
+    if (normalized.includes('var(--a')) return 'oklch(var(--ac))';
+    if (normalized.includes('var(--in')) return 'oklch(var(--inc))';
+    if (normalized.includes('var(--su')) return 'oklch(var(--suc))';
+    if (normalized.includes('var(--wa')) return 'oklch(var(--wac))';
+    if (normalized.includes('var(--er')) return 'oklch(var(--erc))';
+    if (normalized.includes('var(--n')) return 'oklch(var(--nc))';
+    return null;
   }
 
   saveConfig() {

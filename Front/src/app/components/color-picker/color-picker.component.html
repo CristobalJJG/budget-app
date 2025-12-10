@@ -1,0 +1,12 @@
+<div class="color-picker-dropdown">
+    <div class="preview" aria-hidden="true"
+        [ngClass]="'bg-' + (getKeyForLabel(value) || 'primary') + ' text-' + (getKeyForLabel(value) || 'primary') + '-content'">
+    </div>
+
+    <label class="sr-only" for="color-select">Color</label>
+    <select id="color-select" class="color-select select select-bordered" [value]="value || ''"
+        (change)="onSelect($event)">
+        <option value="">-- Seleccionar color --</option>
+        <option *ngFor="let c of colors" [value]="c.label">{{ c.label }}</option>
+    </select>
+</div>

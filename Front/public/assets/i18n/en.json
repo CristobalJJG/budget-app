@@ -66,9 +66,11 @@
         "moreErrors": "more errors"
     },
     "categories": {
+        "title": "Categories",
         "name": "Name",
         "color": "Color",
         "create": "Create category",
+        "add": "Add",
         "edit": "Edit",
         "save": "Save",
         "cancel": "Cancel",

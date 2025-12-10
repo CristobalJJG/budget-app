@@ -4,6 +4,18 @@ import { authMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
 
+// Colores principales de DaisyUI (etiquetas en español -> clave interna)
+const ALLOWED_COLOR_MAP = {
+  'Primario': 'primary',
+  'Secundario': 'secondary',
+  'Acento': 'accent',
+  'Informacion': 'info',
+  'Exito': 'success',
+  'Advertencia': 'warning',
+  'Error': 'error'
+};
+const ALLOWED_COLOR_LABELS = Object.keys(ALLOWED_COLOR_MAP);
+
 // ✅ GET all categories
 router.get("/", authMiddleware, async (req, res) => {
   try {
@@ -40,16 +52,24 @@ router.post("/", authMiddleware, async (req, res) => {
       return res.status(400).json({ error: "Category name is required" });
     }
 
+    // Validar color
+    if (color && !ALLOWED_COLOR_LABELS.includes(color)) {
+      return res.status(400).json({ error: "Invalid color. Allowed: " + ALLOWED_COLOR_LABELS.join(', ') });
+    }
+
     const existing = await Category.findOne({
       where: { name, user_id: req.user.id }
     });
     if (existing) return res.status(409).json({ error: "Category already exists" });
 
-    const newCategory = await Category.create({ name, color: color || '#cccccc', user_id: req.user.id });
+    const colorToSave = color && ALLOWED_COLOR_LABELS.includes(color) ? color : ALLOWED_COLOR_LABELS[0];
+    const newCategory = await Category.create({ name, color: colorToSave, user_id: req.user.id });
     res.status(201).json(newCategory);
   } catch (error) {
     console.error("❌ Error creating category:", error);
-    res.status(500).json({ error: "Failed to create category" });
+    if (error && error.stack) console.error(error.stack);
+    // En desarrollo devolvemos el mensaje para facilitar depuración
+    res.status(500).json({ error: error.message || "Failed to create category" });
   }
 });
 
@@ -64,6 +84,11 @@ router.put("/:id", authMiddleware, async (req, res) => {
     }
     if (!name || name.trim() === "") return res.status(400).json({ error: "Category name is required" });
 
+    // Validar color si se ha enviado
+    if (color && !ALLOWED_COLOR_LABELS.includes(color)) {
+      return res.status(400).json({ error: "Invalid color. Allowed: " + ALLOWED_COLOR_LABELS.join(', ') });
+    }
+
     category.name = name;
     if (color && typeof color === 'string') category.color = color;
     await category.save();
@@ -71,7 +96,8 @@ router.put("/:id", authMiddleware, async (req, res) => {
     res.json(category);
   } catch (error) {
     console.error("❌ Error updating category:", error);
-    res.status(500).json({ error: "Failed to update category" });
+    if (error && error.stack) console.error(error.stack);
+    res.status(500).json({ error: error.message || "Failed to update category" });
   }
 });
 

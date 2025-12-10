@@ -13,12 +13,12 @@ export const Category = sequelize.define('Category', {
   },
   user_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
   },
   color: {
-    type: DataTypes.STRING(7),
+    type: DataTypes.STRING(20),
     allowNull: true,
-    defaultValue: '#cccccc',
+    defaultValue: 'Primario',
   },
 }, {
   tableName: 'categories',
