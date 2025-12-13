@@ -97,6 +97,19 @@
         "confirm": "Confirm",
         "logout": "Logout"
     },
+    "services": {
+        "title": "Services",
+        "placeholderName": "Name",
+        "add": "Add",
+        "edit": "Edit",
+        "delete": "Delete",
+        "columns": {
+            "name": "Name",
+            "user": "User"
+        }
+    },
+    "services.created": "Service created",
+    "services.errorCreate": "Failed creating service",
     "labels": {
         "show": "Show",
         "hide": "Hide"
@@ -104,5 +117,14 @@
     "messages": {
         "loading": "Loading...",
         "errorLoading": "Error loading content"
-    }
+    },
+    "alerts": {
+        "success": "Success",
+        "error": "Error",
+        "dismiss": "Dismiss",
+        "successAddRecord": "Record added successfully",
+        "errorAddRecord": "Failed to add record"
+    },
+    "errorLoadingTransactions": "Error loading transactions",
+    "noCategoryColors": "Transactions lack category colors"
 }

@@ -35,6 +35,11 @@ export class MonthComponent {
     this.selectedMonth = now.getMonth();
   }
 
+  // Bound handler reference so we can remove the listener later
+  private onTransactionsChangedBound = () => {
+    this.handleTransactionsChanged();
+  };
+
   ngOnInit() {
     // Load persisted/demo data first (if present)
     const raw: any = (ninerosData as any) || {};
@@ -67,6 +72,39 @@ export class MonthComponent {
       }
     }).catch(err => {
       console.warn('No se pudieron cargar transacciones remotas:', err);
+    });
+
+    // Listen for external notifications that transactions changed (e.g., after create)
+    try {
+      window.addEventListener('transactions:changed', this.onTransactionsChangedBound);
+    } catch (e) { }
+  }
+
+  ngOnDestroy() {
+    try {
+      window.removeEventListener('transactions:changed', this.onTransactionsChangedBound);
+    } catch (e) { }
+  }
+
+  private handleTransactionsChanged() {
+    // Re-fetch from API/localStorage and re-filter
+    this.transactionsService.getTransactions().then((txs) => {
+      if (txs && txs.length > 0) {
+        this.allTransactions = txs;
+        this.filterForSelectedMonth();
+      } else {
+        const persisted = this.readTransactionsFromLocalStorage();
+        if (persisted) {
+          this.allTransactions = persisted;
+          this.filterForSelectedMonth();
+        }
+      }
+    }).catch(() => {
+      const persisted = this.readTransactionsFromLocalStorage();
+      if (persisted) {
+        this.allTransactions = persisted;
+        this.filterForSelectedMonth();
+      }
     });
   }
 

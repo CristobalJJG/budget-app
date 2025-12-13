@@ -98,6 +98,19 @@
         "confirm": "Confirmar",
         "logout": "Cerrar sesión"
     },
+    "services": {
+        "title": "Servicios",
+        "placeholderName": "Nombre",
+        "add": "Añadir",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "columns": {
+            "name": "Nombre",
+            "user": "Usuario"
+        }
+    },
+    "services.created": "Servicio creado",
+    "services.errorCreate": "Error al crear el servicio",
     "labels": {
         "show": "Mostrar",
         "hide": "Ocultar"
@@ -105,5 +118,14 @@
     "messages": {
         "loading": "Cargando...",
         "errorLoading": "Error al cargar el contenido"
-    }
+    },
+    "alerts": {
+        "success": "Éxito",
+        "error": "Error",
+        "dismiss": "Descartar",
+        "successAddRecord": "Registro añadido correctamente",
+        "errorAddRecord": "Error al añadir el registro"
+    },
+    "errorLoadingTransactions": "Error al cargar transacciones",
+    "noCategoryColors": "Las transacciones no tienen colores de categoría"
 }

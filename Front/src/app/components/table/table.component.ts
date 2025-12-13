@@ -4,6 +4,8 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
 import { LocalStorageService } from '../../services/local-storage.service';
 import { CategoriesService, Category } from '../../services/categories.service';
 import { TransactionsService, Transaction } from '../../services/transactions.service';
+import { AlertService } from '../../services/alert.service';
+import { TranslationService } from '../../services/translation.service';
 import { LOCAL_STORAGE_KEY, TRANSACTIONS_KEY } from '../../constants/keys';
 import { ConfigService } from '../../services/config.service';
 import { ModalService } from '../../services/modal.service';
@@ -50,7 +52,9 @@ export class TableComponent implements OnChanges {
     private readonly categoriesService: CategoriesService,
     private readonly transactionsService: TransactionsService,
     private readonly configService: ConfigService,
-    private readonly modalService: ModalService
+    private readonly modalService: ModalService,
+    private readonly alertService: AlertService,
+    private readonly translationService: TranslationService
   ) {
     this.configService.config$.subscribe(() => {
       this.currencyOptions = this.configService.getCurrencyPipeOptions();
@@ -85,7 +89,11 @@ export class TableComponent implements OnChanges {
           this.applyRows(transactionsFromStorage);
         }
       })
-      .catch(error => console.error('Error al obtener y guardar las transacciones:', error));
+      .catch(error => {
+        const msg = this.translationService.translate('alerts.errorLoadingTransactions', 'Error loading transactions');
+        this.alertService.error(msg + ': ' + (error?.message || error));
+        console.error('Error al obtener y guardar las transacciones:', error);
+      });
   }
 
   private applyRows(rows: any[]) {
@@ -112,6 +120,8 @@ export class TableComponent implements OnChanges {
     );
 
     if (!hasCategoryColor) {
+      const warn = this.translationService.translate('alerts.noCategoryColors', 'Transactions lack category colors');
+      this.alertService.warning(warn);
       console.log('⚠️ Las transacciones no tienen color de categoría. Recargando desde el servidor...');
       // Limpiar localStorage para forzar recarga
       this.localStorageService.removeItem(TRANSACTIONS_KEY);

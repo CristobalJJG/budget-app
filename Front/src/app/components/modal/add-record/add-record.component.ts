@@ -4,6 +4,9 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { TranslatePipe } from '../../../pipes/translate.pipe';
 import { LocalStorageService } from '../../../services/local-storage.service';
 import { TransactionsService } from '../../../services/transactions.service';
+import { ModalService } from '../../../services/modal.service';
+import { AlertService } from '../../../services/alert.service';
+import { TranslationService } from '../../../services/translation.service';
 
 export interface Category {
   id: string | number;
@@ -23,7 +26,10 @@ export class AddRecordComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private localStorageService: LocalStorageService,
-    private transactionService: TransactionsService
+    private transactionService: TransactionsService,
+    private alertService: AlertService,
+    private translationService: TranslationService,
+    private modalService: ModalService
   ) { }
 
   ngOnInit(): void {
@@ -67,10 +73,19 @@ export class AddRecordComponent implements OnInit {
 
       const transaction = await this.transactionService.createTransaction(transactionData);
       if (transaction) {
-        console.log('Transacción creada:', transaction);
+        // Refresh transactions from server/localStorage, close modal, and notify listeners
+        await this.transactionService.getTransactions();
+        const msg = this.translationService.translate('alerts.successAddRecord', 'Record added successfully');
+        this.alertService.success(msg);
         this.onReset();
-        window.location.reload();
-      } else console.error('Error al crear la transacción');
+        this.modalService.close();
+        // Notify other parts of the app that transactions changed
+        try { window.dispatchEvent(new CustomEvent('transactions:changed')); } catch (e) { }
+      } else {
+        const errMsg = this.translationService.translate('alerts.errorAddRecord', 'Failed to add record');
+        this.alertService.error(errMsg);
+        console.error('Error al crear la transacción');
+      }
     }
   }
 
