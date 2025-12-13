@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { LocalStorageService } from '../../services/local-storage.service';
@@ -18,7 +18,7 @@ import { ModalComponent } from '../modal/modal.component';
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.scss']
 })
-export class TableComponent {
+export class TableComponent implements OnChanges {
   @Input() data!: any;
   rows: any[] = [];
   titles: string[] = [];
@@ -45,73 +45,83 @@ export class TableComponent {
 
   ngOnInit() {
     // Obtenemos las categorías primero
-    this.categoriesService.getCategories()
-      .then(() => {
-        const categoriesFromStorage = this.localStorageService.getItem<Category[]>('categories');
-        console.log('Categorías obtenidas desde localStorage:', categoriesFromStorage);
-      })
-      .catch();
+    this.categoriesService.getCategories().catch();
 
-    // Recargar transacciones para asegurar que tengan el color de categoría
+    // If an external `data` input was provided (e.g. from MonthComponent), prefer it.
+    if (this.data && Array.isArray(this.data) && this.data.length > 0) {
+      this.applyRows(this.data);
+      return;
+    }
+
+    // Otherwise, reload transactions from storage/server
     this.loadTransactions();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['data'] && this.data && Array.isArray(this.data)) {
+      this.applyRows(this.data);
+    }
   }
 
   loadTransactions() {
     this.transactionsService.getTransactions()
       .then(() => {
         const transactionsFromStorage = this.localStorageService.getItem<Transaction[]>(TRANSACTIONS_KEY);
-
         if (transactionsFromStorage && transactionsFromStorage.length > 0) {
-          this.rows = transactionsFromStorage;
-          this.titles = Object.keys(this.rows[0] || {});
-
-          // Determinar el ID de la primera transacción
-          const sortedTransactions = [...transactionsFromStorage].sort((a, b) => {
-            const dateA = new Date(a.date).getTime();
-            const dateB = new Date(b.date).getTime();
-            if (dateA !== dateB) {
-              return dateA - dateB;
-            }
-            return a.id - b.id;
-          });
-          
-          this.firstTransactionId = sortedTransactions.length > 0 ? sortedTransactions[0].id : null;
-
-          // Verificar si las transacciones tienen el color de categoría
-          const firstTransaction = this.rows[0];
-          const hasCategoryColor = firstTransaction && (
-            (firstTransaction['Category'] && firstTransaction['Category'].color) ||
-            (firstTransaction['category'] && firstTransaction['category'].color)
-          );
-
-          if (!hasCategoryColor) {
-            console.log('⚠️ Las transacciones no tienen color de categoría. Recargando desde el servidor...');
-            // Limpiar localStorage para forzar recarga
-            this.localStorageService.removeItem(TRANSACTIONS_KEY);
-            // Recargar
-            this.transactionsService.getTransactions()
-              .then(() => {
-                const newTransactions = this.localStorageService.getItem<Transaction[]>(TRANSACTIONS_KEY);
-                if (newTransactions) {
-                  this.rows = newTransactions;
-                }
-              });
-          }
-
-          const savedShowedTitles = this.localStorageService.getItem<{ [key: string]: boolean }>(LOCAL_STORAGE_KEY);
-
-          if (savedShowedTitles) this.showedTitles = savedShowedTitles;
-          else {
-            this.titles.forEach(title => this.showedTitles[title] = true);
-            this.toggleableColumns.forEach(column => {
-              this.showedTitles[column] = false;
-            });
-          }
-
-          this.localStorageService.setItem(LOCAL_STORAGE_KEY, this.showedTitles);
+          this.applyRows(transactionsFromStorage);
         }
       })
       .catch(error => console.error('Error al obtener y guardar las transacciones:', error));
+  }
+
+  private applyRows(rows: any[]) {
+    this.rows = rows;
+    this.titles = Object.keys(this.rows[0] || {});
+
+    // Determinar el ID de la primera transacción
+    const sortedTransactions = [...this.rows].sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      if (dateA !== dateB) {
+        return dateA - dateB;
+      }
+      return a.id - b.id;
+    });
+
+    this.firstTransactionId = sortedTransactions.length > 0 ? sortedTransactions[0].id : null;
+
+    // Verificar si las transacciones tienen el color de categoría
+    const firstTransaction = this.rows[0];
+    const hasCategoryColor = firstTransaction && (
+      (firstTransaction['Category'] && firstTransaction['Category'].color) ||
+      (firstTransaction['category'] && firstTransaction['category'].color)
+    );
+
+    if (!hasCategoryColor) {
+      console.log('⚠️ Las transacciones no tienen color de categoría. Recargando desde el servidor...');
+      // Limpiar localStorage para forzar recarga
+      this.localStorageService.removeItem(TRANSACTIONS_KEY);
+      // Recargar
+      this.transactionsService.getTransactions()
+        .then(() => {
+          const newTransactions = this.localStorageService.getItem<Transaction[]>(TRANSACTIONS_KEY);
+          if (newTransactions) {
+            this.rows = newTransactions;
+          }
+        });
+    }
+
+    const savedShowedTitles = this.localStorageService.getItem<{ [key: string]: boolean }>(LOCAL_STORAGE_KEY);
+
+    if (savedShowedTitles) this.showedTitles = savedShowedTitles;
+    else {
+      this.titles.forEach(title => this.showedTitles[title] = true);
+      this.toggleableColumns.forEach(column => {
+        this.showedTitles[column] = false;
+      });
+    }
+
+    this.localStorageService.setItem(LOCAL_STORAGE_KEY, this.showedTitles);
   }
 
   toggleTitle(title: string) {
@@ -129,13 +139,13 @@ export class TableComponent {
   getCategoryColor(item: any): string | null {
     // Primero intentar obtener el color directamente de la categoría en la transacción
     let categoryObj = null;
-    
+
     if (item['Category']) {
       categoryObj = item['Category'];
     } else if (item['category']) {
       categoryObj = item['category'];
     }
-    
+
     if (categoryObj) {
       // Intentar diferentes formas de acceder al color
       if (categoryObj.color) {
@@ -144,7 +154,7 @@ export class TableComponent {
         return categoryObj.dataValues.color;
       }
     }
-    
+
     // Si no encontramos el color en la transacción, buscarlo en las categorías almacenadas
     if (item['category_id']) {
       const categories = this.localStorageService.getItem<Category[]>('categories');
@@ -155,7 +165,7 @@ export class TableComponent {
         }
       }
     }
-    
+
     return null;
   }
 
@@ -231,7 +241,7 @@ export class TableComponent {
     };
 
     this.selectedTransaction = transactionData;
-    
+
     // Determinar si es la primera transacción
     const allTransactions = await this.transactionsService.getTransactions();
     const sortedTransactions = [...allTransactions].sort((a, b) => {
@@ -242,9 +252,9 @@ export class TableComponent {
       }
       return a.id - b.id;
     });
-    
+
     this.isFirstTransaction = sortedTransactions.length > 0 && sortedTransactions[0].id === transaction.id;
-    
+
     // Abrir el modal después de establecer la transacción
     setTimeout(() => {
       this.modalService.open({

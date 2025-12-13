@@ -75,7 +75,7 @@ export class ConfigComponent {
     });
 
     const user = this.authService.getCurrentUser();
-    this.theme = (user?.theme as string) || 'light';
+    this.theme = (user?.theme as string) || 'dark';
   }
 
   async loadCategories(): Promise<void> {
@@ -151,7 +151,7 @@ export class ConfigComponent {
   }
 
   async updateTheme(theme?: string): Promise<void> {
-    const nextTheme = theme || this.theme || 'light';
+    const nextTheme = theme || this.theme || 'dark';
     this.theme = nextTheme;
     this.authService.applyTheme(nextTheme);
     await this.authService.updateTheme(nextTheme);

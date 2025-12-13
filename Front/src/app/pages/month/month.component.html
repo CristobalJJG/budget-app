@@ -1,12 +1,49 @@
-<div class="flex justify-end mb-4">
-    <button (click)="openModal()"
-        class="rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white inset-ring inset-ring-white/5 hover:bg-white/20">
-        {{ 'month.addRecord' | translate }}
-    </button>
+<!-- Month selector above header -->
+<div class="mb-4 flex items-center justify-start gap-4">
+    <div class="flex items-center gap-2">
+        <button (click)="prevMonth()" aria-label="Mes anterior" class="p-2 rounded-md bg-base-200 hover:bg-base-300">
+            <!-- left arrow -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd"
+                    d="M12.293 16.293a1 1 0 0 1-1.414 1.414l-6-6a1 1 0 0 1 0-1.414l6-6a1 1 0 0 1 1.414 1.414L7.414 10l4.879 4.879z"
+                    clip-rule="evenodd" />
+            </svg>
+        </button>
+
+        <div class="w-[175px] text-center px-3 py-1 rounded text-sm font-medium">
+            {{ monthLabel }}
+        </div>
+
+        <button (click)="nextMonth()" aria-label="Mes siguiente" class="p-2 rounded-md bg-base-200 hover:bg-base-300">
+            <!-- right arrow -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd"
+                    d="M7.707 3.707a1 1 0 0 1 0-1.414L14.707 10l-7 7a1 1 0 0 1-1.414-1.414L11.586 10 7.707 6.121z"
+                    clip-rule="evenodd" />
+            </svg>
+        </button>
+    </div>
+
+    <div class="flex-1"></div>
+
+    <div class="flex justify-end">
+        <button (click)="openModal()"
+            class="rounded-md bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white inset-ring inset-ring-white/5 hover:bg-white/20">
+            {{ 'month.addRecord' | translate }}
+        </button>
+    </div>
 </div>
 
 <app-modal>
     <app-add-record></app-add-record>
 </app-modal>
 
-<app-table [data]="data"></app-table>
+<!-- If no data for selected month, show centered message -->
+<div *ngIf="!data || data.length === 0" class="min-h-[40vh] flex items-center justify-center">
+    <div class="text-center text-gray-400">Sin registros</div>
+</div>
+
+<!-- Otherwise show table -->
+<ng-container *ngIf="data && data.length > 0">
+    <app-table [data]="data"></app-table>
+</ng-container>

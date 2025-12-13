@@ -44,8 +44,11 @@ export class AuthService {
 
         this.currentUserSubject.next(user);
         this.isAuthenticatedSubject.next(!!token);
+        // If a user has a preferred theme, use it. If there's no user logged in, default to dark theme.
         if (user?.theme) {
             this.applyTheme(user.theme);
+        } else if (!user) {
+            this.applyTheme('dark');
         }
     }
 
@@ -142,17 +145,19 @@ export class AuthService {
         // Limpiar datos de autenticación
         this.localStorageService.removeItem('token');
         this.localStorageService.removeItem('user');
-        
+
         // Limpiar datos específicos del usuario
         this.localStorageService.removeItem(TRANSACTIONS_KEY);
         this.localStorageService.removeItem(CATEGORIES_KEY);
-        
+
         // Limpiar estado de login
         this.localStorageService.removeItem('isLogin');
 
         // Actualizar observables
         this.currentUserSubject.next(null);
         this.isAuthenticatedSubject.next(false);
+        // Ensure UI defaults to dark theme when no user is logged in
+        this.applyTheme('dark');
     }
 
     isAuthenticated(): boolean {

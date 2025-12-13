@@ -15,7 +15,7 @@ import { User } from '../../services/auth.service';
 export class NavbarComponent implements OnInit {
   currentUser$!: Observable<User | null>;
   isMenuOpen = false;
-  theme: 'light' | 'dark' = 'light';
+  theme: 'light' | 'dark' = 'dark';
 
   constructor(
     private authService: AuthService,
@@ -25,7 +25,7 @@ export class NavbarComponent implements OnInit {
   ngOnInit(): void {
     this.currentUser$ = this.authService.currentUser$;
     this.currentUser$.subscribe((user) => {
-      const nextTheme = (user?.theme as 'light' | 'dark') || 'light';
+      const nextTheme = (user?.theme as 'light' | 'dark') || 'dark';
       this.theme = nextTheme;
       this.authService.applyTheme(nextTheme);
     });
