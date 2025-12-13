@@ -4,6 +4,7 @@ import { TableComponent } from '../../components/table/table.component';
 import { ModalComponent } from '../../components/modal/modal.component';
 import { AddRecordComponent } from '../../components/modal/add-record/add-record.component';
 import { TranslatePipe } from '../../pipes/translate.pipe';
+import { MonthSelectorComponent } from '../../components/month-selector/month-selector.component';
 import { ModalService } from '../../services/modal.service';
 import { TransactionsService, Transaction } from '../../services/transactions.service';
 import { LocalStorageService } from '../../services/local-storage.service';
@@ -11,7 +12,7 @@ import * as ninerosData from '../../../data/nineros.json';
 
 @Component({
   selector: 'app-month',
-  imports: [CommonModule, TableComponent, ModalComponent, AddRecordComponent, TranslatePipe],
+  imports: [CommonModule, TableComponent, ModalComponent, AddRecordComponent, TranslatePipe, MonthSelectorComponent],
   templateUrl: './month.component.html'
 })
 export class MonthComponent {

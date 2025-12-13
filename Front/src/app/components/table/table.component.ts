@@ -18,6 +18,20 @@ import { ModalComponent } from '../modal/modal.component';
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.scss']
 })
+/**
+ * TableComponent
+ *
+ * Purpose:
+ * - Present transaction data in a tabular format.
+ * - This component accepts `data` as an input and will prefer external data
+ *   (for example, a filtered subset provided by a parent container) before
+ *   falling back to localStorage/server-loaded transactions.
+ *
+ * Notes for maintainers:
+ * - Keep this component presentational: it should not be responsible for
+ *   high-level filtering or business logic. Parents (containers/pages)
+ *   should provide already-filtered arrays when possible.
+ */
 export class TableComponent implements OnChanges {
   @Input() data!: any;
   rows: any[] = [];
