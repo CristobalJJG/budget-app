@@ -2,7 +2,7 @@
 @use "tailwindcss";
 
 @plugin "daisyui" {
-    themes: light --default, dark --prefersdark, dark;
+    themes: all;
 }
 
 html {

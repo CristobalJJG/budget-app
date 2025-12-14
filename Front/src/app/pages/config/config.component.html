@@ -3,7 +3,7 @@
     <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
         <!-- Theme (izquierda, ocupa columnas 1-2) -->
         <div class="bg-base-100 p-6 rounded-lg shadow border border-base-300 h-full md:col-span-2">
-            <app-theme-config></app-theme-config>
+            <app-theme-config [theme]="theme" (themeChange)="onThemeChange($event)"></app-theme-config>
         </div>
 
         <!-- Currency settings (columna 3, rowspan 2) -->
