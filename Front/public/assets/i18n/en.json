@@ -63,7 +63,8 @@
         "errors": "Errors",
         "row": "Row",
         "andMore": "and",
-        "moreErrors": "more errors"
+        "moreErrors": "more errors",
+        "language": "Language"
     },
     "categories": {
         "title": "Categories",
@@ -110,6 +111,9 @@
     },
     "services.created": "Service created",
     "services.errorCreate": "Failed creating service",
+    "services.deleteConfirm": "Are you sure you want to delete this service?",
+    "services.deleted": "Service deleted",
+    "services.errorDelete": "Failed deleting service",
     "labels": {
         "show": "Show",
         "hide": "Hide"
@@ -126,5 +130,34 @@
         "errorAddRecord": "Failed to add record"
     },
     "errorLoadingTransactions": "Error loading transactions",
-    "noCategoryColors": "Transactions lack category colors"
+    "noCategoryColors": "Transactions lack category colors",
+    "general": {
+        "title": "General overview",
+        "loading": "Loading...",
+        "service": "Service",
+        "actions": "Actions",
+        "saveMonth": "Save month",
+        "saving": "Saving",
+        "total": "Total",
+        "columnTotals": "Column totals"
+    },
+    "months": {
+        "1": "January",
+        "2": "February",
+        "3": "March",
+        "4": "April",
+        "5": "May",
+        "6": "June",
+        "7": "July",
+        "8": "August",
+        "9": "September",
+        "10": "October",
+        "11": "November",
+        "12": "December"
+    },
+    "languages": {
+        "en": "English",
+        "es": "Español"
+    },
+    "general.language": "Language"
 }

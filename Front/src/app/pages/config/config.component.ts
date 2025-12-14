@@ -7,6 +7,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
 import { CategoriesService, Category } from '../../services/categories.service';
 import { TransactionsService } from '../../services/transactions.service';
 import { AuthService } from '../../services/auth.service';
+import { TranslationService } from '../../services/translation.service';
 import { ServicesConfigComponent } from './internal/services-config.component';
 import { CurrencyConfigComponent } from './internal/currency-config.component';
 import { ImportConfigComponent } from './internal/import-config.component';
@@ -62,6 +63,7 @@ export class ConfigComponent {
     private readonly transactionsService: TransactionsService,
     private readonly fb: FormBuilder,
     private readonly authService: AuthService,
+    private readonly translationService: TranslationService,
   ) {
     this.config = this.configService.getConfig();
   }
@@ -79,6 +81,16 @@ export class ConfigComponent {
 
     const user = this.authService.getCurrentUser();
     this.theme = (user?.theme as string) || 'dark';
+    this.lang = this.translationService.lang;
+  }
+
+  // Language selector
+  lang: string = 'en';
+  languages: string[] = ['en', 'es'];
+
+  async onLangChange(lang: string): Promise<void> {
+    await this.translationService.setLang(lang);
+    this.lang = this.translationService.lang;
   }
 
   async loadCategories(): Promise<void> {

@@ -21,3 +21,14 @@ input {
         color: rgba(201, 201, 201, 0.75);
     }
 }
+
+/* Remove up/down spinners from number inputs used in the table */
+.input[type="number"]::-webkit-outer-spin-button,
+.input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.input[type="number"] {
+    -moz-appearance: textfield;
+}

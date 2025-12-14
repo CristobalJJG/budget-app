@@ -7,6 +7,7 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
 import { MonthSelectorComponent } from '../../components/month-selector/month-selector.component';
 import { ModalService } from '../../services/modal.service';
 import { TransactionsService, Transaction } from '../../services/transactions.service';
+import { ServicesService } from '../../services/services.service';
 import { LocalStorageService } from '../../services/local-storage.service';
 import * as ninerosData from '../../../data/nineros.json';
 
@@ -27,8 +28,9 @@ export class MonthComponent {
 
   monthLabel = '';
 
-  constructor(private modalService: ModalService, private transactionsService: TransactionsService,
-    private localStorageService: LocalStorageService
+  constructor(private modalService: ModalService,
+    private transactionsService: TransactionsService,
+    private servicesService: ServicesService
   ) {
     const now = new Date();
     this.selectedYear = now.getFullYear();
@@ -62,13 +64,14 @@ export class MonthComponent {
     }
 
     this.updateMonthLabel();
-    this.filterForSelectedMonth();
+    // filterForSelectedMonth is async now because it fetches service records
+    this.filterForSelectedMonth().catch(err => console.error(err));
 
     // Then try to load from API in background
     this.transactionsService.getTransactions().then((txs) => {
       if (txs && txs.length > 0) {
         this.allTransactions = txs;
-        this.filterForSelectedMonth();
+        this.filterForSelectedMonth().catch(err => console.error(err));
       }
     }).catch(err => {
       console.warn('No se pudieron cargar transacciones remotas:', err);
@@ -143,7 +146,7 @@ export class MonthComponent {
     this.filterForSelectedMonth();
   }
 
-  private filterForSelectedMonth() {
+  private async filterForSelectedMonth() {
     const month = this.selectedMonth;
     const year = this.selectedYear;
 
@@ -179,7 +182,6 @@ export class MonthComponent {
       if (ts === null) return false;
       return ts >= startEpoch && ts <= endEpoch;
     });
-    debugger;
     this.data = list;
     this.selectedTransactions = list;
 
@@ -190,6 +192,39 @@ export class MonthComponent {
         'start:', new Date(startEpoch).toISOString(), 'end:', new Date(endEpoch).toISOString(),
         'total transactions:', (this.allTransactions || []).length,
         'sample dates:', (this.allTransactions || []).slice(0, 5).map((x: any) => x.date));
+    }
+    // Calculate starting balance from service_records of previous month
+    try {
+      // previous month in ServicesService is 1-based (1..12)
+      const prevMonthNum = month === 0 ? 12 : month; // if selectedMonth is 0 (Jan), prev is Dec (12)
+      const prevYear = month === 0 ? year - 1 : year;
+      const serviceRecords = await this.servicesService.getRecords(prevYear, prevMonthNum);
+      const startingBalance = (serviceRecords || []).reduce((sum, r) => sum + (r.amount || 0), 0);
+
+      // Sort selected transactions by date then id, then compute running balance
+      const sorted = [...this.selectedTransactions].sort((a, b) => {
+        const ta = this.parseDateToEpoch(a.date) || 0;
+        const tb = this.parseDateToEpoch(b.date) || 0;
+        if (ta !== tb) return ta - tb;
+        return (a.id || 0) - (b.id || 0);
+      });
+
+      let running = startingBalance;
+      for (const tx of sorted) {
+        const amt = Number(tx.amount) || 0;
+        running += amt;
+        tx.balance_after = running;
+      }
+
+      // Update this.selectedTransactions with computed balances in original order
+      const mapped = this.selectedTransactions.map(s => {
+        const match = sorted.find(x => x.id === s.id);
+        return match || s;
+      });
+      this.selectedTransactions = mapped;
+      this.data = mapped;
+    } catch (e) {
+      console.warn('Could not compute starting balance from service records', e);
     }
   }
 

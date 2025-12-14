@@ -1,35 +1,42 @@
 <div class="container mx-auto p-4">
     <h1 class="text-2xl font-bold mb-6">{{ 'config.title' | translate }}</h1>
-    <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-        <!-- Theme (izquierda, ocupa columnas 1-2) -->
-        <div class="bg-base-100 p-6 rounded-lg shadow border border-base-300 h-full md:col-span-2">
+    <section class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <!-- Theme (col 1) -->
+        <section class="h-full md:col-span-1 bg-base-100 p-6 rounded-lg shadow border border-base-300">
             <app-theme-config [theme]="theme" (themeChange)="onThemeChange($event)"></app-theme-config>
-        </div>
+        </section>
 
-        <!-- Currency settings (columna 3, rowspan 2) -->
-        <div class="col-span-1 md:col-span-1 md:row-span-2">
-            <div class="h-full">
-                <app-currency-config></app-currency-config>
+        <!-- Language (col 2) -->
+        <section class="h-full md:col-span-1 bg-base-100 p-6 rounded-lg shadow border border-base-300">
+            <div class="mt-0">
+                <label class="label">
+                    <span class="label-text">{{ 'config.language' | translate }}</span>
+                </label>
+                <select class="select select-bordered w-full" [(ngModel)]="lang" (ngModelChange)="onLangChange($event)">
+                    <option *ngFor="let l of languages" [value]="l">{{ ('languages.' + l) | translate }}</option>
+                </select>
             </div>
-        </div>
+        </section>
 
-        <!-- Servicios (columna 4, rowspan 2) -->
-        <div class="col-span-1 md:col-span-1 md:row-span-2">
-            <div class="bg-base-100 p-6 rounded-lg shadow border border-base-300 h-full">
-                <h2 class="text-xl font-semibold mb-4">{{ 'services.title' | translate }}</h2>
-                <app-services-config></app-services-config>
-            </div>
-        </div>
+        <!-- Currency (col 3, rowspan 2) -->
+        <section
+            class="col-span-1 md:col-span-1 md:row-span-2 h-full bg-base-100 p-6 rounded-lg shadow border border-base-300">
+            <app-currency-config></app-currency-config>
+        </section>
 
-        <!-- Import (debajo de Tema, columnas 1-2) -->
-        <div class="col-span-1 md:col-span-2">
-            <div class="h-full">
-                <app-import-config></app-import-config>
-            </div>
-        </div>
-    </div>
+        <!-- Services (col 4, rowspan 2) -->
+        <section
+            class="col-span-1 md:col-span-1 md:row-span-2 h-full bg-base-100 p-6 rounded-lg shadow border border-base-300">
+            <app-services-config></app-services-config>
+        </section>
 
-    <div class="mt-6">
+        <!-- Import (fila 2, columnas 1-2) -->
+        <section class="col-span-1 md:col-span-2 h-full bg-base-100 p-6 rounded-lg shadow border border-base-300">
+            <app-import-config></app-import-config>
+        </section>
+    </section>
+
+    <section class="mt-6 bg-base-100 p-6 rounded-lg shadow border border-base-300 h-full">
         <app-categories-config></app-categories-config>
-    </div>
+    </section>
 </div>

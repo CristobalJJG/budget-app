@@ -14,7 +14,7 @@
                         <!-- Header -->
                         <div class="bg-gray-700/25 px-4 py-3 sm:flex sm:flex-row-reverse">
                             <h2 id="dialog-title" class="text-lg font-medium leading-6 text-white flex-1 text-left">
-                                {{ config.title }}
+                                {{ config.title | translate }}
                             </h2>
                         </div>
 
@@ -26,7 +26,7 @@
                             </ng-container>
                             <ng-template #contentOrProjected>
                                 <ng-container *ngIf="config.content; else projectedContent">
-                                    <p>{{ config.content }}</p>
+                                    <p>{{ config.content | translate }}</p>
                                 </ng-container>
                                 <ng-template #projectedContent>
                                     <ng-content></ng-content>
@@ -40,11 +40,11 @@
                             <button type="button" (click)="onConfirm()"
                                 [ngClass]="config.isDanger ? 'bg-red-500 hover:bg-red-400' : 'bg-blue-500 hover:bg-blue-400'"
                                 class="inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white sm:ml-3 sm:w-auto">
-                                {{ config.confirmText || ('modal.confirm' | translate) }}
+                                {{ (config.confirmText || 'modal.confirm') | translate }}
                             </button>
                             <button type="button" (click)="onCancel()"
                                 class="mt-3 inline-flex w-full justify-center rounded-md bg-white/10 px-3 py-2 text-sm font-semibold text-white hover:bg-white/20 sm:mt-0 sm:w-auto">
-                                {{ config.cancelText || ('modal.cancel' | translate) }}
+                                {{ (config.cancelText || 'modal.cancel') | translate }}
                             </button>
                         </div>
                     </ng-container>

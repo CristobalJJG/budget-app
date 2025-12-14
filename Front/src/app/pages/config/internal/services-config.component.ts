@@ -5,6 +5,7 @@ import { ServicesService, ServiceItem } from '../../../services/services.service
 import { AlertService } from '../../../services/alert.service';
 import { TranslatePipe } from '../../../pipes/translate.pipe';
 import { TranslationService } from '../../../services/translation.service';
+import { ModalService } from '../../../services/modal.service';
 
 @Component({
   selector: 'app-services-config',
@@ -54,7 +55,8 @@ export class ServicesConfigComponent {
   constructor(
     private servicesApi: ServicesService,
     private alert: AlertService,
-    private translation: TranslationService
+    private translation: TranslationService,
+    private modalService: ModalService
   ) {
     this.load();
   }
@@ -82,8 +84,26 @@ export class ServicesConfigComponent {
   }
 
   remove(id: number) {
-    if (!confirm('Delete service?')) return;
-    this.servicesApi.deleteService(id).then(() => this.load());
+    // pass translation keys to modal so the modal template applies the translate pipe
+    const titleKey = 'services.delete';
+    const contentKey = 'services.deleteConfirm';
+    this.modalService.open({
+      title: titleKey,
+      content: contentKey,
+      isDanger: true,
+      confirmText: 'modal.confirm',
+      cancelText: 'modal.cancel',
+      onConfirm: async () => {
+        try {
+          await this.servicesApi.deleteService(id);
+          this.alert.success(this.translation.translate('services.deleted', 'Service deleted'));
+          this.load();
+        } catch (e: any) {
+          const serverMsg = e?.response?.data?.error || e?.message || 'Unknown error';
+          this.alert.error(this.translation.translate('services.errorDelete', 'Failed deleting service') + ': ' + serverMsg);
+        }
+      }
+    });
   }
 
   toggle() {

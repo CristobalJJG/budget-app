@@ -63,7 +63,8 @@
         "errors": "Errores",
         "row": "Fila",
         "andMore": "y",
-        "moreErrors": "errores más"
+        "moreErrors": "errores más",
+        "language": "Idioma"
     },
     "categories": {
         "title": "Categorías",
@@ -111,6 +112,9 @@
     },
     "services.created": "Servicio creado",
     "services.errorCreate": "Error al crear el servicio",
+    "services.deleteConfirm": "¿Está seguro que desea eliminar este servicio?",
+    "services.deleted": "Servicio eliminado",
+    "services.errorDelete": "Error al eliminar el servicio",
     "labels": {
         "show": "Mostrar",
         "hide": "Ocultar"
@@ -127,5 +131,34 @@
         "errorAddRecord": "Error al añadir el registro"
     },
     "errorLoadingTransactions": "Error al cargar transacciones",
-    "noCategoryColors": "Las transacciones no tienen colores de categoría"
+    "noCategoryColors": "Las transacciones no tienen colores de categoría",
+    "general": {
+        "title": "Visión general",
+        "loading": "Cargando...",
+        "service": "Servicio",
+        "actions": "Acciones",
+        "saveMonth": "Guardar mes",
+        "saving": "Guardando",
+        "total": "Total",
+        "columnTotals": "Totales por mes"
+    },
+    "months": {
+        "1": "Enero",
+        "2": "Febrero",
+        "3": "Marzo",
+        "4": "Abril",
+        "5": "Mayo",
+        "6": "Junio",
+        "7": "Julio",
+        "8": "Agosto",
+        "9": "Septiembre",
+        "10": "Octubre",
+        "11": "Noviembre",
+        "12": "Diciembre"
+    },
+    "languages": {
+        "en": "Inglés",
+        "es": "Español"
+    },
+    "general.language": "Idioma"
 }

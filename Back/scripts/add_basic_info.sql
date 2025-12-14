@@ -1,6 +1,8 @@
-SELECT * from categories;
+delete from service_records;
 delete from transactions;
 delete from categories;
+
+select * from
 
 
 insert into transactions (date, name, amount, category_id, description) values ('2025-11-01', 'Sueldo', 1520,  1,   NULL);

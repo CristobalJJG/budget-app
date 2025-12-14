@@ -1,0 +1,60 @@
+<div class="container mx-auto p-4">
+    <div class="flex items-center justify-between mb-4">
+        <h1 class="text-2xl font-bold">{{ 'general.title' | translate }}</h1>
+        <div class="flex items-center gap-2">
+            <button class="btn btn-sm" (click)="prevYear()">«</button>
+            <div class="font-medium">{{ currentYear }}</div>
+            <button class="btn btn-sm" (click)="nextYear()">»</button>
+        </div>
+    </div>
+
+    <div *ngIf="loading" class="p-4">{{ 'general.loading' | translate }}</div>
+
+    <div *ngIf="!loading">
+        <div class="overflow-auto relative">
+            <table class="table table-zebra w-full">
+                <thead>
+                    <tr>
+                        <th class="sticky left-0 z-30 bg-base-200 w-48">{{ 'general.service' | translate }}</th>
+                        <th *ngFor="let m of months">{{ ('months.' + m.num) | translate }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let s of services">
+                        <td class="font-medium sticky left-0 z-20 bg-base-100 w-48">{{ s.name }}</td>
+                        <td *ngFor="let m of months">
+                            <input #amt type="number" step="0.01" class="input input-bordered w-full"
+                                [value]="getPendingAmount(s.id, m.num)" (input)="onAmountEdit(amt.value, s, m.num)" />
+                        </td>
+                        <td class="font-semibold">{{ getRowSum(s.id) | number:'1.2-2' }}</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <!-- Totals row: sum per column (month) -->
+                    <tr class="bg-base-200">
+                        <td class="font-semibold sticky left-0 z-30 bg-base-200 w-48">{{ 'general.columnTotals' |
+                            translate }}</td>
+                        <td *ngFor="let m of months" class="font-semibold">{{ getColumnSum(m.num) | number:'1.2-2' }}
+                        </td>
+                        <td class="font-semibold">{{ getGrandTotal() | number:'1.2-2' }}</td>
+                    </tr>
+
+                    <tr>
+                        <td class="font-semibold sticky left-0 z-20 bg-base-100 w-48">{{ 'general.actions' | translate
+                            }}</td>
+                        <td *ngFor="let m of months">
+                            <button class="btn btn-primary w-full"
+                                [disabled]="!isMonthDirty(m.num) || savingMonths.has(m.num)" (click)="saveMonth(m.num)">
+                                <span *ngIf="!savingMonths.has(m.num)">{{ ('general.saveMonth' | translate) || 'Guardar
+                                    mes' }}</span>
+                                <span *ngIf="savingMonths.has(m.num)">{{ ('general.saving' | translate) || 'Guardando'
+                                    }}...</span>
+                            </button>
+                        </td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

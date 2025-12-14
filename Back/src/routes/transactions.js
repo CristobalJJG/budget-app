@@ -104,21 +104,21 @@ router.post("/import", authMiddleware, upload.single("file"), async (req, res) =
       if (excelDate instanceof Date) {
         return excelDate.toISOString().split("T")[0];
       }
-      
+
       if (typeof excelDate === "number") {
         // Excel almacena fechas como números (días desde 1900-01-01)
         const excelEpoch = new Date(1899, 11, 30);
         const date = new Date(excelEpoch.getTime() + excelDate * 24 * 60 * 60 * 1000);
         return date.toISOString().split("T")[0];
       }
-      
+
       // Si es string, intentar parsearlo
       const dateStr = excelDate.toString().trim();
       // Intentar diferentes formatos de fecha
-      const dateMatch = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/) || 
-                       dateStr.match(/(\d{2})\/(\d{2})\/(\d{4})/) ||
-                       dateStr.match(/(\d{2})-(\d{2})-(\d{4})/);
-      
+      const dateMatch = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/) ||
+        dateStr.match(/(\d{2})\/(\d{2})\/(\d{4})/) ||
+        dateStr.match(/(\d{2})-(\d{2})-(\d{4})/);
+
       if (dateMatch) {
         if (dateMatch[0].includes("/") || dateMatch[0].includes("-")) {
           // Formato DD/MM/YYYY o DD-MM-YYYY
@@ -129,7 +129,7 @@ router.post("/import", authMiddleware, upload.single("file"), async (req, res) =
         }
         return dateMatch[0];
       }
-      
+
       return dateStr;
     };
 
@@ -300,16 +300,36 @@ router.put("/:id", authMiddleware, async (req, res) => {
 
     // Guardar la fecha original para determinar el mes/año
     const originalDate = new Date(transaction.date);
+    // Si es la primera transacción del mes original, no permitir editarla
+    try {
+      const origMonth = originalDate.getMonth() + 1;
+      const origYear = originalDate.getFullYear();
+      const origFirst = await Transaction.findOne({
+        where: {
+          user_id: req.user.id,
+          [Op.and]: [
+            sequelize.where(sequelize.fn('YEAR', sequelize.col('date')), origYear),
+            sequelize.where(sequelize.fn('MONTH', sequelize.col('date')), origMonth)
+          ]
+        },
+        order: [['date', 'ASC'], ['id', 'ASC']]
+      });
+      if (origFirst && origFirst.id === transaction.id) {
+        return res.status(403).json({ error: 'First transaction of the month cannot be edited' });
+      }
+    } catch (e) {
+      console.warn('Could not determine original first transaction:', e);
+    }
     const newDate = date ? new Date(date) : originalDate;
-    
+
     // Obtener mes y año de la fecha (original o nueva)
     const month = newDate.getMonth() + 1; // getMonth() devuelve 0-11
     const year = newDate.getFullYear();
 
     // Guardar valores actualizados para usar en el recálculo
     const updatedAmount = amount !== undefined ? parseFloat(amount) : parseFloat(transaction.amount);
-    const updatedBalanceAfter = balance_after !== undefined && balance_after !== null 
-      ? parseFloat(balance_after) 
+    const updatedBalanceAfter = balance_after !== undefined && balance_after !== null
+      ? parseFloat(balance_after)
       : null;
 
     // Actualizar la transacción
@@ -342,7 +362,7 @@ router.put("/:id", authMiddleware, async (req, res) => {
         // Si es la primera transacción del mes, buscar el último balance del mes anterior
         const previousMonth = month === 1 ? 12 : month - 1;
         const previousYear = month === 1 ? year - 1 : year;
-        
+
         const lastTransactionOfPreviousMonth = await Transaction.findOne({
           where: {
             user_id: req.user.id,
@@ -353,7 +373,7 @@ router.put("/:id", authMiddleware, async (req, res) => {
           },
           order: [["date", "DESC"], ["id", "DESC"]],
         });
-        
+
         if (lastTransactionOfPreviousMonth && lastTransactionOfPreviousMonth.balance_after !== null) {
           previousBalance = parseFloat(lastTransactionOfPreviousMonth.balance_after);
           console.log(`📌 Balance del mes anterior: ${previousBalance}`);
@@ -377,21 +397,21 @@ router.put("/:id", authMiddleware, async (req, res) => {
       // Recalcular balances desde la siguiente transacción en adelante
       let runningBalance = currentBalance;
       let updatedCount = 0;
-      
+
       for (let i = currentIndex + 1; i < allTransactions.length; i++) {
         const nextTrans = allTransactions[i];
         const nextAmount = parseFloat(nextTrans.amount);
         const calculatedBalance = runningBalance + nextAmount;
         const newBalance = parseFloat(calculatedBalance.toFixed(2));
-        
+
         console.log(`  💰 Actualizando transacción ${nextTrans.id}: ${runningBalance} + ${nextAmount} = ${newBalance}`);
-        
+
         nextTrans.balance_after = newBalance;
         await nextTrans.save();
         runningBalance = calculatedBalance;
         updatedCount++;
       }
-      
+
       console.log(`✅ Recalculación completada. Se actualizaron ${updatedCount} transacciones posteriores`);
     } else if (currentIndex === -1) {
       console.log(`⚠️ No se encontró la transacción en el array de transacciones del mes`);
@@ -417,6 +437,28 @@ router.delete("/:id", authMiddleware, async (req, res) => {
     const transaction = await Transaction.findByPk(req.params.id);
     if (!transaction || transaction.user_id !== req.user.id) {
       return res.status(404).json({ error: "Transaction not found" });
+    }
+
+    // Prevent deleting the first transaction of the month
+    try {
+      const tDate = new Date(transaction.date);
+      const tMonth = tDate.getMonth() + 1;
+      const tYear = tDate.getFullYear();
+      const first = await Transaction.findOne({
+        where: {
+          user_id: req.user.id,
+          [Op.and]: [
+            sequelize.where(sequelize.fn('YEAR', sequelize.col('date')), tYear),
+            sequelize.where(sequelize.fn('MONTH', sequelize.col('date')), tMonth)
+          ]
+        },
+        order: [['date', 'ASC'], ['id', 'ASC']]
+      });
+      if (first && first.id === transaction.id) {
+        return res.status(403).json({ error: 'First transaction of the month cannot be deleted' });
+      }
+    } catch (e) {
+      console.warn('Could not determine first transaction for delete check', e);
     }
 
     await transaction.destroy();

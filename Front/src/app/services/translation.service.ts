@@ -61,6 +61,16 @@ export class TranslationService {
   // key can be nested like "modal.confirm"
   translate(key: string, fallback?: string): string {
     if (!key) return fallback || key;
+    // First, check if the translations object contains the full key as a literal (supports keys with dots)
+    try {
+      if (this.translations && Object.prototype.hasOwnProperty.call(this.translations, key)) {
+        const literal = this.translations[key];
+        return typeof literal === 'string' ? literal : (fallback ?? key);
+      }
+    } catch (e) {
+      // ignore and continue to nested lookup
+    }
+
     const parts = key.split('.');
     let cur: any = this.translations;
     for (const p of parts) {
