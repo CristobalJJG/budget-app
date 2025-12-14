@@ -11,37 +11,46 @@ import { TranslatePipe } from '../../../pipes/translate.pipe';
     imports: [CommonModule, ReactiveFormsModule, FormsModule, ColorPickerComponent, TranslatePipe],
     template: `
   <div class="p-2">
-    <h2 class="text-xl font-semibold mb-4">{{ 'categories.title' | translate }}</h2>
+    <div class="flex items-center justify-between">
+      <h2 class="text-xl font-semibold">{{ 'categories.title' | translate }}</h2>
+      <button class="btn btn-ghost btn-sm md:hidden" (click)="toggle()" aria-label="Toggle categories">
+        <svg *ngIf="!collapsed" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+        <svg *ngIf="collapsed" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </button>
+    </div>
 
-    <form [formGroup]="categoryForm" class="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full" (ngSubmit)="createCategory()">
-      <div class="flex-shrink-0">
-        <app-color-picker [colors]="allowedColors" [value]="categoryForm.get('color')?.value" (valueChange)="categoryForm.patchValue({ color: $event })"></app-color-picker>
-      </div>
-
-      <div class="flex-1 w-full">
-        <input formControlName="name" class="input input-bordered w-full truncate" [placeholder]="'categories.name' | translate" />
-      </div>
-
-      <div class="w-full md:w-auto">
-        <button type="submit" class="btn btn-primary w-full md:w-auto" [disabled]="!categoryForm.valid">{{ 'categories.add' | translate }}</button>
-      </div>
-    </form>
-
-    <ul class="space-y-3 mt-6">
-      <li *ngFor="let c of categories" class="flex items-center justify-between p-4 bg-base-100 border border-base-300 rounded-lg">
-        <div class="flex items-center gap-3">
-          <div class="px-4 py-2 rounded-lg font-medium" [ngClass]="!isHex(c.color) ? getBgClass(c.color+'') : ''" [style.background]="isHex(c.color) ? c.color : null" [style.color]="getContrastColorMaybe(c.color)">{{ c.name }}</div>
+    <div [class.hidden]="collapsed" class="mt-3">
+      <form [formGroup]="categoryForm" class="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full" (ngSubmit)="createCategory()">
+        <div class="flex-shrink-0">
+          <app-color-picker [colors]="allowedColors" [value]="categoryForm.get('color')?.value" (valueChange)="categoryForm.patchValue({ color: $event })"></app-color-picker>
         </div>
-        <div class="flex gap-2">
-          <button class="btn btn-md btn-primary" (click)="startEditing(c)">{{ 'categories.edit' | translate }}</button>
-          <button class="btn btn-md btn-error" (click)="deleteCategory(c.id)">{{ 'categories.delete' | translate }}</button>
+
+        <div class="flex-1 w-full">
+          <input formControlName="name" class="input input-bordered w-full truncate" [placeholder]="'categories.name' | translate" />
         </div>
-      </li>
-    </ul>
+
+        <div class="w-full md:w-auto">
+          <button type="submit" class="btn btn-primary w-full md:w-auto" [disabled]="!categoryForm.valid">{{ 'categories.add' | translate }}</button>
+        </div>
+      </form>
+
+      <ul class="space-y-3 mt-6">
+        <li *ngFor="let c of categories" class="flex items-center justify-between p-4 bg-base-100 border border-base-300 rounded-lg">
+          <div class="flex items-center gap-3">
+            <div class="px-4 py-2 rounded-lg font-medium" [ngClass]="!isHex(c.color) ? getBgClass(c.color+'') : ''" [style.background]="isHex(c.color) ? c.color : null" [style.color]="getContrastColorMaybe(c.color)">{{ c.name }}</div>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-md btn-primary" (click)="startEditing(c)">{{ 'categories.edit' | translate }}</button>
+            <button class="btn btn-md btn-error" (click)="deleteCategory(c.id)">{{ 'categories.delete' | translate }}</button>
+          </div>
+        </li>
+      </ul>
+    </div>
   </div>
   `
 })
 export class CategoriesConfigComponent {
+    collapsed = false;
     categories: Category[] = [];
     allowedColors = [
         { label: 'Primario', key: 'primary' },
@@ -53,9 +62,11 @@ export class CategoriesConfigComponent {
         { label: 'Error', key: 'error' },
     ];
 
-    categoryForm = this.fb.group({ name: [''], color: [this.allowedColors[0].label] });
+
+    categoryForm: any;
 
     constructor(private categoriesService: CategoriesService, private fb: FormBuilder) {
+        this.categoryForm = this.fb.group({ name: [''], color: [this.allowedColors[0].label] });
         this.load();
     }
 
@@ -110,5 +121,9 @@ export class CategoriesConfigComponent {
             return luminance < 0.5 ? '#ffffff' : '#000000';
         }
         return null;
+    }
+
+    toggle() {
+        this.collapsed = !this.collapsed;
     }
 }

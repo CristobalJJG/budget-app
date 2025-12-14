@@ -7,18 +7,17 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
 import { CategoriesService, Category } from '../../services/categories.service';
 import { TransactionsService } from '../../services/transactions.service';
 import { AuthService } from '../../services/auth.service';
-import { ThemeSelectorComponent } from '../../components/theme-selector/theme-selector.component';
 import { ColorPickerComponent } from '../../components/color-picker/color-picker.component';
 import { ServicesConfigComponent } from './internal/services-config.component';
 import { CurrencyConfigComponent } from './internal/currency-config.component';
 import { ImportConfigComponent } from './internal/import-config.component';
 import { CategoriesConfigComponent } from './internal/categories-config.component';
-import { ThemeConfigComponent } from './internal/theme-config.component';
+import { ThemeSelectorConfig } from './internal/theme-config.component';
 
 @Component({
   selector: 'app-config',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslatePipe, ThemeSelectorComponent, ThemeConfigComponent, ColorPickerComponent, ServicesConfigComponent, CurrencyConfigComponent, ImportConfigComponent, CategoriesConfigComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslatePipe, ThemeSelectorConfig, ColorPickerComponent, ServicesConfigComponent, CurrencyConfigComponent, ImportConfigComponent, CategoriesConfigComponent],
   templateUrl: './config.component.html',
   styles: []
 })
