@@ -6,6 +6,7 @@ services:
     volumes:
       - ./Back:/app
     working_dir: /app
+    image: casaos/backend:latest
     environment:
       - DB_HOST=192.168.1.36
       - DB_USER=casaos
@@ -21,13 +22,9 @@ services:
     volumes:
       - ./Front:/app
       - /app/node_modules
+    image: casaos/frontend:latest
     working_dir: /app
     ports:
       - "4200:4200"
     stdin_open: true
     tty: true
-    depends_on:
-      - backend
-
-volumes:
-  db_data:
