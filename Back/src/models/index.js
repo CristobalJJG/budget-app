@@ -27,8 +27,26 @@ ServiceRecord.belongsTo(User, { foreignKey: 'user_id' });
 
 export const initDB = async () => {
   await connectDB();
-  await sequelize.sync({ alter: true }); // crea/actualiza tablas según modelos
-  console.log('🧩 Database synced');
+
+  const maxSyncAttempts = 3;
+  for (let i = 1; i <= maxSyncAttempts; i++) {
+    try {
+      await sequelize.sync({ alter: true }); // crea/actualiza tablas según modelos
+      console.log('🧩 Database synced');
+      break;
+    } catch (err) {
+      console.error(`⚠️ sync attempt ${i} failed:`, err.message || err);
+      if (i === maxSyncAttempts) throw err;
+      // Intentar reconnectar antes del siguiente intento
+      console.log('🔁 Reintentando sincronización en 2s...');
+      await new Promise((res) => setTimeout(res, 2000));
+      try {
+        await connectDB();
+      } catch (e) {
+        console.error('❌ Reconexión fallida:', e.message || e);
+      }
+    }
+  }
 };
 
 export { Category, Transaction, User, Service, ServiceRecord };

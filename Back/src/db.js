@@ -29,47 +29,74 @@ export const sequelize = new Sequelize(
     port: databasePort,
     dialect: 'mysql',
     logging: false,
+    pool: {
+      max: 10,
+      min: 0,
+      acquire: 60000,
+      idle: 10000
+    },
+    dialectOptions: {
+      connectTimeout: 60000
+    },
+    retry: {
+      max: 3
+    }
   }
 );
 
 export const connectDB = async () => {
-  try {
-    // Try to connect to the target database
-    await sequelize.authenticate();
-    console.log(`✅ Connected to MariaDB database "${databaseName}" via Sequelize`);
-  } catch (error) {
-    // If database doesn't exist, create it
-    if (error.original && (error.original.code === 'ER_BAD_DB_ERROR' || error.original.code === 'ER_NO_DB_ERROR')) {
-      console.log(`📦 Database "${databaseName}" does not exist. Creating it...`);
+  const maxAttempts = 5;
+  const wait = (ms) => new Promise((res) => setTimeout(res, ms));
 
-      const adminSequelize = new Sequelize(
-        null, // No database selected
-        databaseUser,
-        databasePassword,
-        {
-          host: databaseHost,
-          port: databasePort,
-          dialect: 'mysql',
-          logging: false,
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      // Try to connect to the target database
+      await sequelize.authenticate();
+      console.log(`✅ Connected to MariaDB database "${databaseName}" via Sequelize`);
+      return;
+    } catch (error) {
+      // If database doesn't exist, create it
+      if (error.original && (error.original.code === 'ER_BAD_DB_ERROR' || error.original.code === 'ER_NO_DB_ERROR')) {
+        console.log(`📦 Database "${databaseName}" does not exist. Creating it...`);
+
+        const adminSequelize = new Sequelize(
+          null, // No database selected
+          databaseUser,
+          databasePassword,
+          {
+            host: databaseHost,
+            port: databasePort,
+            dialect: 'mysql',
+            logging: false,
+            pool: { max: 2, min: 0 }
+          }
+        );
+
+        try {
+          await adminSequelize.authenticate();
+          await adminSequelize.query(`CREATE DATABASE IF NOT EXISTS \`${databaseName}\`;`);
+          console.log(`✅ Database "${databaseName}" created successfully`);
+          await adminSequelize.close();
+
+          // Now connect to the newly created database
+          await sequelize.authenticate();
+          console.log(`✅ Connected to MariaDB database "${databaseName}" via Sequelize`);
+          return;
+        } catch (createError) {
+          console.error('❌ Failed to create database:', createError);
+          throw createError;
         }
-      );
-
-      try {
-        await adminSequelize.authenticate();
-        await adminSequelize.query(`CREATE DATABASE IF NOT EXISTS \`${databaseName}\`;`);
-        console.log(`✅ Database "${databaseName}" created successfully`);
-        await adminSequelize.close();
-
-        // Now connect to the newly created database
-        await sequelize.authenticate();
-        console.log(`✅ Connected to MariaDB database "${databaseName}" via Sequelize`);
-      } catch (createError) {
-        console.error('❌ Failed to create database:', createError);
-        throw createError;
       }
-    } else {
-      console.error('❌ Connection failed:', error);
-      throw error;
+
+      console.error(`❌ Connection attempt ${attempt} failed:`, error.message || error);
+      if (attempt < maxAttempts) {
+        const backoff = 2000 * attempt;
+        console.log(`⏳ Reintentando en ${backoff}ms...`);
+        await wait(backoff);
+      } else {
+        console.error('❌ Máximo de intentos alcanzado.');
+        throw error;
+      }
     }
   }
 };
