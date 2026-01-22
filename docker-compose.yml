@@ -8,7 +8,7 @@ services:
     working_dir: /app
     image: casaos/backend:latest
     environment:
-      - DB_HOST=192.168.1.36
+      - DB_HOST=mariadb
       - DB_USER=casaos
       - DB_PASSWORD=casaos
       - DB_NAME=casaos
@@ -28,3 +28,20 @@ services:
       - "4200:4200"
     stdin_open: true
     tty: true
+
+  mariadb:
+    image: mariadb:10.6
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=casaos
+      - MYSQL_DATABASE=casaos
+      - MYSQL_USER=casaos
+      - MYSQL_PASSWORD=casaos
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./Back/scripts:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "3307:3306"
+
+volumes:
+  db_data:
