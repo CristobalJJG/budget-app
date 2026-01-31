@@ -7,3 +7,6 @@
 
 # Environment
 .env
+/Back_py/.venv
+/Back_py/__pycache__
+/Back_py/routes/__pycache__
