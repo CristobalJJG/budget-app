@@ -39,6 +39,8 @@ services:
       - ./Front:/app
       - /app/node_modules
     image: casaos/frontend:latest
+    environment:
+      - BASE_API_URL=http://backend:5000/api
     working_dir: /app
     ports:
       - "4200:4200"

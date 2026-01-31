@@ -19,4 +19,3 @@ Endpoints (prefijo `/api`):
 - `/api/services` CRUD
 - `/api/transactions` CRUD
 
-DB por defecto: `sqlite:///budget_py.db`.
